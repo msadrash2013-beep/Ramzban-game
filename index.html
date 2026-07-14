@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>بازی رمزبان</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            font-family: 'Vazirmatn', sans-serif;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 450px;
+            height: 100vh;
+            max-height: 850px;
+            background: #e0f7fa;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #splash-screen {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #4facfe;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        #splash-screen .box-art {
+            width: 100%; height: 100%;
+            background: linear-gradient(to bottom, #87CEEB, #4facfe); 
+            display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative;
+            padding: 20px;
+        }
+        #splash-screen h1 { font-size: 50px; color: #1565c0; margin-bottom:0; font-weight: 900; text-shadow: 2px 2px 0 #fff;}
+        .top-circles { display:flex; gap:15px; margin-top:20px; margin-bottom: 30px;}
+        .circle { width:45px; height:45px; border-radius:50%; display:flex; justify-content:center; align-items:center; color:white; font-size:24px; font-weight:bold; border:3px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        
+        #menu-screen {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            padding: 20px;
+            text-align: center;
+            background: white;
+        }
+        #menu-screen h1 { font-size: 28px; color: #2c3e50; margin-bottom: 20px; }
+        .menu-btn-group { display: flex; gap: 20px; width: 100%; justify-content: center; }
+        .menu-btn {
+            padding: 15px 40px;
+            border-radius: 30px;
+            border: none;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn-easy { background: #2ecc71; }
+        .btn-hard { background: #e74c3c; }
+        #menu-screen p { font-size: 14px; color: #7f8c8d; margin-top: 20px; }
+
+        #game-screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            padding: 10px;
+            background: #ffffff;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2980b9;
+            padding: 10px 15px;
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 10px;
+        }
+        .score-box {
+            display: flex;
+            align-items: center;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+        .stars { color: #f1c40f; font-size: 20px; margin-left: 5px; }
+
+        .game-area {
+            flex: 1;
+            position: relative;
+            background: #f1f9ff;
+            border-radius: 25px;
+            overflow: hidden;
+            padding: 10px 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .top-row, .bottom-row {
+            display: flex;
+            justify-content: space-around;
+            padding: 5px 0;
+        }
+
+        .letter-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 22px;
+            color: white;
+            border: 3px solid white;
+            background: #e67e22;
+            box-shadow: 0 4px 0 #a04000;
+        }
+
+        .ladder-container {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .ladder-grid {
+            display: grid;
+            width: 100%;
+            height: 95%;
+            position: relative;
+        }
+
+        .grid-pole {
+            background: #bdc3c7;
+            border-left: 2px solid #95a5a6;
+            border-right: 2px solid #95a5a6;
+            border-radius: 4px;
+            width: 100%;
+            height: 100%;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .grid-rung {
+            background: #ecf0f1;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .grid-rung.active {
+            background: #e67e22;
+            border-color: #d35400;
+            box-shadow: 0 0 10px rgba(230, 126, 34, 0.6);
+        }
+
+        .grid-rung:active { transform: scale(0.9); }
+
+        .footer {
+            display: flex;
+            justify-content: center;
+            padding: 10px;
+        }
+        .btn-check {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            border-radius: 30px;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #1e8449;
+            width: 80%;
+        }
+        .btn-check:active { transform: translateY(4px); box-shadow: none; }
+
+        #result-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            padding: 20px;
+        }
+        .result-title { font-size: 40px; font-weight: 900; margin-bottom: 10px; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .result-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 300px;
+            margin-top: 15px;
+        }
+        .result-btn {
+            padding: 15px;
+            border-radius: 25px;
+            border: none;
+            background: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            color: #333;
+        }
+        .result-btn:active { transform: scale(0.95); }
+
+        #result-overlay.success { background: rgba(46, 204, 113, 0.95); }
+        #result-overlay.fail { background: rgba(231, 76, 60, 0.95); }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div id="splash-screen">
+        <div class="box-art">
+            <h1>رَمزبان</h1>
+            <div class="top-circles">
+                <div class="circle" style="background:#e74c3c;">ا</div>
+                <div class="circle" style="background:#27ae60;">ب</div>
+                <div class="circle" style="background:#f1c40f;">ج</div>
+                <div class="circle" style="background:#2980b9;">د</div>
+                <div class="circle" style="background:#8e44ad;">ر</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.4); padding:10px 20px; border-radius:20px; color:#1565c0; font-weight:bold; margin-top:10px; font-size:18px;">1-2 نفر | 7+ سال</div>
+        </div>
+    </div>
+
+    <div id="menu-screen">
+        <h1>به بازی رمزبان خوش آمدید!</h1>
+        <div class="menu-btn-group">
+            <button class="menu-btn btn-easy" onclick="startGame('easy')">آسان</button>
+            <button class="menu-btn btn-hard" onclick="startGame('hard')">سخت</button>
+        </div>
+        <p>لطفا سطح بازی را انتخاب کنید.</p>
+    </div>
+
+    <div id="game-screen">
+        <div class="header">
+            <div>سطح: <span id="current-level">آسان</span></div>
+            <div class="score-box">
+                <span class="stars">⭐</span>
+                <span id="total-stars">0</span>
+            </div>
+        </div>
+
+        <div class="game-area" id="game-area">
+            <div class="top-row" id="top-row"></div>
+            <div class="ladder-container" id="ladder-container"></div>
+            <div class="bottom-row" id="bottom-row"></div>
+
+            <div class="footer">
+                <button class="btn-check" onclick="checkAnswer()">چک</button>
+            </div>
+        </div>
+
+        <div id="result-overlay">
+            <div class="result-title" id="result-title">آفرین!</div>
+            <div id="stars-earned" style="font-size:40px; margin-bottom:20px; color:white; text-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>
+            <div class="result-buttons" id="result-buttons"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const EASY_LETTERS = ['ا', 'ب', 'ج', 'د'];
+    const HARD_LETTERS = ['ا', 'ب', 'ج', 'د', 'ر'];
+    const NUMBER_OF_STEPS = 5;
+
+    let currentGameState = {
+        level: 'easy',
+        letters: [],
+        targetLetters: [],
+        rungsState: [],
+        currentStars: 0,
+        currentPuzzleIndex: 0,
+        puzzles: []
+    };
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function generatePuzzleSet(level, count=15) {
+        let puzzles = [];
+        let lettersPool = level === 'easy' ? EASY_LETTERS : HARD_LETTERS;
+        for(let k=0; k<count; k++) {
+            let shuffled = shuffleArray([...lettersPool]);
+            let input = [...shuffled];
+            let output = shuffleArray([...shuffled]);
+            let rungs = [];
+            for(let i=0; i<input.length; i++) {
+                let row = [];
+                for(let j=0; j<NUMBER_OF_STEPS; j++) {
+                    row.push(Math.random() < 0.4); 
+                }
+                rungs.push(row);
+            }
+            puzzles.push({ input, output, rungs });
+        }
+        return puzzles;
+    }
+
+    function initGame() {
+        currentGameState.puzzles = {
+            easy: generatePuzzleSet('easy'),
+            hard: generatePuzzleSet('hard')
+        };
+        document.getElementById('splash-screen').style.display = 'flex';
+        document.getElementById('menu-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'none';
+        setTimeout(() => {
+            document.getElementById('splash-screen').style.display = 'none';
+            document.getElementById('menu-screen').style.display = 'flex';
+        }, 5000);
+    }
+
+    function startGame(level) {
+        currentGameState.level = level;
+        currentGameState.currentPuzzleIndex = 0;
+        document.getElementById('menu-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'flex';
+        document.getElementById('result-overlay').style.display = 'none';
+        document.getElementById('current-level').innerText = level === 'easy' ? 'آسان' : 'سخت';
+        loadPuzzle();
+    }
+
+    function loadPuzzle() {
+        let pool = currentGameState.puzzles[currentGameState.level];
+        let puzzle = pool[currentGameState.currentPuzzleIndex % pool.length];
+        currentGameState.letters = puzzle.input;
+        currentGameState.targetLetters = puzzle.output;
+        currentGameState.rungsState = puzzle.rungs.map(row => [...row]); 
+        renderGame();
+        document.getElementById('result-overlay').style.display = 'none';
+    }
+
+    function renderGame() {
+        const topRow = document.getElementById('top-row');
+        const bottomRow = document.getElementById('bottom-row');
+        const ladderContainer = document.getElementById('ladder-container');
+
+        topRow.innerHTML = '';
+        bottomRow.innerHTML = '';
+        ladderContainer.innerHTML = '';
+
+        let numCols = currentGameState.letters.length;
+
+        currentGameState.letters.forEach(l => {
+            let div = document.createElement('div');
+            div.className = 'letter-box';
+            div.innerText = l;
+            topRow.appendChild(div);
+        });
+
+        currentGameState.targetLetters.forEach(l => {
+            let div = document.createElement('div');
+            div.className = 'letter-box';
+            div.innerText = l;
+            bottomRow.appendChild(div);
+        });
+
+        // --- استفاده از Grid (جدول) برای چیدن دقیق قطعات ---
+        ladderContainer.style.display = 'grid';
+        ladderContainer.style.gridTemplateColumns = `repeat(${numCols * 2 - 1}, 1fr)`;
+        ladderContainer.style.gridTemplateRows = `repeat(${NUMBER_OF_STEPS}, 1fr)`;
+        ladderContainer.style.gap = '5px';
+
+        for (let row = 0; row < NUMBER_OF_STEPS; row++) {
+            for (let col = 0; col < numCols * 2 - 1; col++) {
+                let cell = document.createElement('div');
+                cell.style.display = 'flex';
+                cell.style.justifyContent = 'center';
+                cell.style.alignItems = 'center';
+
+                if (col % 2 === 0) {
+                    // ستون‌های عمودی (پایه‌ها)
+                    let pole = document.createElement('div');
+                    pole.className = 'grid-pole';
+                    cell.appendChild(pole);
+                } else {
+                    // پله‌های افقی (بین ستون‌ها)
+                    let leftColIndex = Math.floor(col / 2);
+                    let rung = document.createElement('div');
+                    rung.className = 'grid-rung';
+                    
+                    if (currentGameState.rungsState[leftColIndex][row]) {
+                        rung.classList.add('active');
+                    }
+
+                    rung.onclick = function(e) {
+                        e.stopPropagation();
+                        this.classList.toggle('active');
+                        currentGameState.rungsState[leftColIndex][row] = this.classList.contains('active');
+                    };
+                    cell.appendChild(rung);
+                }
+                ladderContainer.appendChild(cell);
+            }
+        }
+    }
+
+    function simulateMovement() {
+        let finalPositions = [];
+        let numCols = currentGameState.letters.length;
+        for(let startCol=0; startCol<numCols; startCol++) {
+            let currentCol = startCol;
+            for(let step=0; step<NUMBER_OF_STEPS; step++) {
+                let canGoLeft = currentCol > 0 && currentGameState.rungsState[currentCol-1][step];
+                let canGoRight = currentCol < numCols-1 && currentGameState.rungsState[currentCol][step];
+                if(canGoLeft && canGoRight) {
+                    continue; 
+                } 
+                else if(canGoLeft) {
+                    currentCol--;
+                    while(currentCol > 0 && currentGameState.rungsState[currentCol-1][step]) {
+                        currentCol--;
+                    }
+                }
+                else if(canGoRight) {
+                    currentCol++;
+                    while(currentCol < numCols-1 && currentGameState.rungsState[currentCol][step]) {
+                        currentCol++;
+                    }
+                }
+            }
+            finalPositions.push(currentCol);
+        }
+        return finalPositions;
+    }
+
+    function checkAnswer() {
+        let finalCols = simulateMovement();
+        let isCorrect = true;
+        for(let i=0; i<currentGameState.letters.length; i++) {
+            if(currentGameState.letters[i] !== currentGameState.targetLetters[finalCols[i]]) {
+                isCorrect = false;
+                break;
+            }
+        }
+        showResult(isCorrect);
+    }
+
+    function showResult(isCorrect) {
+        const overlay = document.getElementById('result-overlay');
+        const title = document.getElementById('result-title');
+        const stars = document.getElementById('stars-earned');
+        const buttons = document.getElementById('result-buttons');
+        if(isCorrect) {
+            overlay.className = 'success';
+            overlay.style.display = 'flex';
+            title.innerText = 'آفرین!';
+            let earned = currentGameState.level === 'easy' ? 1 : 2;
+            let starStr = '⭐'.repeat(earned);
+            stars.innerText = starStr;
+            currentGameState.currentStars += earned;
+            document.getElementById('total-stars').innerText = currentGameState.currentStars;
+            buttons.innerHTML = `
+                <button class="result-btn" onclick="continueGame('easy')">ادامه با سطح آسان</button>
+                <button class="result-btn" onclick="continueGame('hard')">ادامه با سطح سخت</button>
+            `;
+        } else {
+            overlay.className = 'fail';
+            overlay.style.display = 'flex';
+            title.innerText = 'نادرست!';
+            stars.innerText = '';
+            buttons.innerHTML = `
+                <button class="result-btn" onclick="retryLevel()">امتحان مجدد</button>
+                <button class="result-btn" onclick="nextLevelNoScore()">بعدی</button>
+            `;
+        }
+    }
+
+    function continueGame(level) {
+        currentGameState.level = level;
+        document.getElementById('current-level').innerText = level === 'easy' ? 'آسان' : 'سخت';
+        currentGameState.currentPuzzleIndex++;
+        loadPuzzle();
+    }
+
+    function retryLevel() {
+        loadPuzzle();
+    }
+
+    function nextLevelNoScore() {
+        currentGameState.currentPuzzleIndex++;
+        loadPuzzle();
+    }
+
+    window.onload = initGame;
+</script>
+</body>
+</html>
