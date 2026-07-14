@@ -19,7 +19,7 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            background: #f0f0f0;
+            background: #e0e0e0;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -38,7 +38,7 @@
             flex-direction: column;
         }
 
-        /* --- صفحه شروع (تصویر شماره 1) --- */
+        /* --- صفحه شروع --- */
         #splash-screen {
             position: absolute;
             top: 0; left: 0;
@@ -60,7 +60,7 @@
         .top-circles { display:flex; gap:15px; margin-top:20px; margin-bottom: 30px;}
         .circle { width:45px; height:45px; border-radius:50%; display:flex; justify-content:center; align-items:center; color:white; font-size:24px; font-weight:bold; border:3px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         
-        /* --- صفحه منو --- */
+        /* --- منو --- */
         #menu-screen {
             display: none;
             flex-direction: column;
@@ -163,17 +163,12 @@
             padding: 0 20px;
         }
 
-        /* 
-           طراحی پایه‌های عمودی (Poles)
-           این دقیقاً همان چیزی است که شما می‌خواستید. 
-           یک خط عمودی از زیر حرف بالا تا بالای حرف پایین.
-        */
         .vertical-pole {
             position: absolute;
             top: 0;
             bottom: 0;
             width: 10px;
-            background: #bdc3c7; /* خاکستری روشن */
+            background: #bdc3c7;
             border-left: 2px solid #95a5a6;
             border-right: 2px solid #95a5a6;
             border-radius: 3px;
@@ -182,7 +177,6 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
-        /* فضای خالی بین ستون ها برای قرارگیری پله های افقی */
         .rung-space {
             position: absolute;
             height: 16px;
@@ -193,11 +187,10 @@
             align-items: center;
         }
         
-        /* پله افقی (بین دو پایه عمودی) */
         .rung-line {
             width: 100%;
             height: 100%;
-            background: #ecf0f1; /* سفید مایل به خاکستری (خاموش) */
+            background: #ecf0f1;
             border: 2px solid #bdc3c7;
             border-radius: 10px;
             transition: all 0.2s ease;
@@ -206,9 +199,8 @@
             box-shadow: 0 2px 3px rgba(0,0,0,0.1);
         }
         
-        /* حالت فعال (روشن) پله */
         .rung-line.active {
-            background: #e67e22; /* نارنجی روشن */
+            background: #e67e22;
             border-color: #d35400;
             box-shadow: 0 0 10px rgba(230, 126, 34, 0.6);
         }
@@ -336,19 +328,18 @@
     // --- تنظیمات اولیه ---
     const EASY_LETTERS = ['ا', 'ب', 'ج', 'د'];
     const HARD_LETTERS = ['ا', 'ب', 'ج', 'د', 'ر'];
-    const NUMBER_OF_STEPS = 5; // 5 ردیف پله
+    const NUMBER_OF_STEPS = 5;
 
     let currentGameState = {
         level: 'easy',
         letters: [],
         targetLetters: [],
-        rungsState: [], // آرایه دو بعدی: [ستون مبدا][شماره پله] => boolean
+        rungsState: [],
         currentStars: 0,
         currentPuzzleIndex: 0,
         puzzles: []
     };
 
-    // --- توابع کمکی ---
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -357,7 +348,6 @@
         return array;
     }
 
-    // --- تولید منطق پازل ---
     function generatePuzzleSet(level, count=15) {
         let puzzles = [];
         let lettersPool = level === 'easy' ? EASY_LETTERS : HARD_LETTERS;
@@ -365,14 +355,11 @@
         for(let k=0; k<count; k++) {
             let shuffled = shuffleArray([...lettersPool]);
             let input = [...shuffled];
-            let output = shuffleArray([...shuffled]); // خروجی جایگشتی از ورودی
-
-            // ایجاد ماتریس پله ها (همه مقادیر اولیه false هستند)
+            let output = shuffleArray([...shuffled]);
             let rungs = [];
             for(let i=0; i<input.length; i++) {
                 let row = [];
                 for(let j=0; j<NUMBER_OF_STEPS; j++) {
-                    // شانس 40% فعال بودن پله برای ساختن چالش
                     row.push(Math.random() < 0.4); 
                 }
                 rungs.push(row);
@@ -381,8 +368,6 @@
         }
         return puzzles;
     }
-
-    // --- منطق اصلی صفحه بندی ---
 
     function initGame() {
         currentGameState.puzzles = {
@@ -433,9 +418,7 @@
         ladderContainer.innerHTML = '';
 
         let numCols = currentGameState.letters.length;
-        let ladderWidth = ladderContainer.offsetWidth || 300;
 
-        // رندر حروف بالا و پایین
         currentGameState.letters.forEach(l => {
             let div = document.createElement('div');
             div.className = 'letter-box';
@@ -450,22 +433,21 @@
             bottomRow.appendChild(div);
         });
 
-        // --- رندر نردبان‌ها ---
-        
-        // 1. کشیدن پایه‌های عمودی (Poles)
-        // ما یک پایه عمودی زیر هر حرف بالا می‌کشیم که تا بالای حرف پایین ادامه دارد.
+        // Fix for Mobile: Exact pixel calculation using getBoundingClientRect
+        const containerRect = ladderContainer.getBoundingClientRect();
+        const containerWidth = containerRect.width;
+        const poleWidth = 10;
+        const poleGap = (containerWidth - (numCols * poleWidth)) / numCols;
+
         for(let col=0; col<numCols; col++) {
             let pole = document.createElement('div');
             pole.className = 'vertical-pole';
-            // محاسبه موقعیت افقی پایه بر اساس تعداد ستون‌ها
-            let leftPos = ((col + 0.5) * (100 / numCols));
-            pole.style.left = leftPos + '%';
+            let leftPos = (col * (poleGap + poleWidth)) + (poleGap / 2);
+            pole.style.left = leftPos + 'px';
             ladderContainer.appendChild(pole);
         }
 
-        // 2. کشیدن پله‌های افقی بین پایه‌ها
         for(let step=0; step<NUMBER_OF_STEPS; step++) {
-            // 10% فاصله از بالا و 10% فاصله از پایین
             let stepPercent = 10 + (step * (80 / (NUMBER_OF_STEPS - 1)));
             
             for(let col=0; col<numCols-1; col++) {
@@ -473,12 +455,9 @@
                 rungSpace.className = 'rung-space';
                 rungSpace.style.top = stepPercent + '%';
                 
-                // محاسبه دقیق موقعیت افقی (بین دو پایه)
-                let leftOffset = ((col + 0.5) * (100 / numCols));
-                let widthOffset = (100 / numCols);
-                
-                rungSpace.style.left = leftOffset + '%';
-                rungSpace.style.width = widthOffset + '%';
+                let leftOffset = (col * (poleGap + poleWidth)) + poleWidth + (poleGap / 2);
+                rungSpace.style.left = leftOffset + 'px';
+                rungSpace.style.width = poleGap + 'px';
 
                 let rungLine = document.createElement('div');
                 rungLine.className = 'rung-line';
@@ -499,7 +478,6 @@
         }
     }
 
-    // --- شبیه‌سازی حرکت حروف ---
     function simulateMovement() {
         let finalPositions = [];
         let numCols = currentGameState.letters.length;
