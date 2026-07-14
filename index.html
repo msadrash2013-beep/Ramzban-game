@@ -38,7 +38,6 @@
             flex-direction: column;
         }
 
-        /* --- صفحه شروع --- */
         #splash-screen {
             position: absolute;
             top: 0; left: 0;
@@ -60,7 +59,6 @@
         .top-circles { display:flex; gap:15px; margin-top:20px; margin-bottom: 30px;}
         .circle { width:45px; height:45px; border-radius:50%; display:flex; justify-content:center; align-items:center; color:white; font-size:24px; font-weight:bold; border:3px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         
-        /* --- منو --- */
         #menu-screen {
             display: none;
             flex-direction: column;
@@ -87,7 +85,6 @@
         .btn-hard { background: #e74c3c; }
         #menu-screen p { font-size: 14px; color: #7f8c8d; margin-top: 20px; }
 
-        /* --- صفحه بازی --- */
         #game-screen {
             display: none;
             flex-direction: column;
@@ -115,7 +112,6 @@
         }
         .stars { color: #f1c40f; font-size: 20px; margin-left: 5px; }
 
-        /* --- میدان بازی --- */
         .game-area {
             flex: 1;
             position: relative;
@@ -154,7 +150,6 @@
             z-index: 10;
         }
 
-        /* --- نردبان و پله ها --- */
         .ladder-container {
             flex: 1;
             position: relative;
@@ -167,7 +162,7 @@
             position: absolute;
             top: 0;
             bottom: 0;
-            width: 10px;
+            width: 12px;
             background: #bdc3c7;
             border-left: 2px solid #95a5a6;
             border-right: 2px solid #95a5a6;
@@ -207,7 +202,6 @@
 
         .rung-line:active { transform: scale(0.92); }
 
-        /* --- دکمه چک --- */
         .footer {
             display: flex;
             justify-content: center;
@@ -227,7 +221,6 @@
         }
         .btn-check:active { transform: translateY(4px); box-shadow: none; }
 
-        /* --- صفحات نتیجه --- */
         #result-overlay {
             position: absolute;
             top: 0; left: 0;
@@ -268,7 +261,6 @@
 <body>
 
 <div id="app">
-    <!-- صفحه اسپلش -->
     <div id="splash-screen">
         <div class="box-art">
             <h1>رَمزبان</h1>
@@ -283,7 +275,6 @@
         </div>
     </div>
 
-    <!-- صفحه منو -->
     <div id="menu-screen">
         <h1>به بازی رمزبان خوش آمدید!</h1>
         <div class="menu-btn-group">
@@ -293,7 +284,6 @@
         <p>لطفا سطح بازی را انتخاب کنید.</p>
     </div>
 
-    <!-- صفحه بازی -->
     <div id="game-screen">
         <div class="header">
             <div>سطح: <span id="current-level">آسان</span></div>
@@ -305,9 +295,7 @@
 
         <div class="game-area" id="game-area">
             <div class="top-row" id="top-row"></div>
-            
             <div class="ladder-container" id="ladder-container"></div>
-            
             <div class="bottom-row" id="bottom-row"></div>
 
             <div class="footer">
@@ -315,7 +303,6 @@
             </div>
         </div>
 
-        <!-- نتیجه -->
         <div id="result-overlay">
             <div class="result-title" id="result-title">آفرین!</div>
             <div id="stars-earned" style="font-size:40px; margin-bottom:20px; color:white; text-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>
@@ -325,7 +312,6 @@
 </div>
 
 <script>
-    // --- تنظیمات اولیه ---
     const EASY_LETTERS = ['ا', 'ب', 'ج', 'د'];
     const HARD_LETTERS = ['ا', 'ب', 'ج', 'د', 'ر'];
     const NUMBER_OF_STEPS = 5;
@@ -351,7 +337,6 @@
     function generatePuzzleSet(level, count=15) {
         let puzzles = [];
         let lettersPool = level === 'easy' ? EASY_LETTERS : HARD_LETTERS;
-        
         for(let k=0; k<count; k++) {
             let shuffled = shuffleArray([...lettersPool]);
             let input = [...shuffled];
@@ -374,11 +359,9 @@
             easy: generatePuzzleSet('easy'),
             hard: generatePuzzleSet('hard')
         };
-        
         document.getElementById('splash-screen').style.display = 'flex';
         document.getElementById('menu-screen').style.display = 'none';
         document.getElementById('game-screen').style.display = 'none';
-
         setTimeout(() => {
             document.getElementById('splash-screen').style.display = 'none';
             document.getElementById('menu-screen').style.display = 'flex';
@@ -391,7 +374,6 @@
         document.getElementById('menu-screen').style.display = 'none';
         document.getElementById('game-screen').style.display = 'flex';
         document.getElementById('result-overlay').style.display = 'none';
-        
         document.getElementById('current-level').innerText = level === 'easy' ? 'آسان' : 'سخت';
         loadPuzzle();
     }
@@ -399,11 +381,9 @@
     function loadPuzzle() {
         let pool = currentGameState.puzzles[currentGameState.level];
         let puzzle = pool[currentGameState.currentPuzzleIndex % pool.length];
-        
         currentGameState.letters = puzzle.input;
         currentGameState.targetLetters = puzzle.output;
         currentGameState.rungsState = puzzle.rungs.map(row => [...row]); 
-
         renderGame();
         document.getElementById('result-overlay').style.display = 'none';
     }
@@ -433,45 +413,45 @@
             bottomRow.appendChild(div);
         });
 
-        // Fix for Mobile: Exact pixel calculation using getBoundingClientRect
-        const containerRect = ladderContainer.getBoundingClientRect();
-        const containerWidth = containerRect.width;
-        const poleWidth = 10;
-        const poleGap = (containerWidth - (numCols * poleWidth)) / numCols;
+        // --- محاسبات ریاضی دقیق و غیرقابل تغییر برای اینترنت ---
+        let poleWidth = 12;
+        let totalPoleWidth = numCols * poleWidth;
+        
+        // تعیین فاصله دقیق بین هر ستون بر اساس درصد صفحه
+        let spaceBetweenPoles = (100 - (numCols * 4)) / numCols; 
+        let centerOffset = spaceBetweenPoles / 2;
 
+        // رسم پایه‌های عمودی
         for(let col=0; col<numCols; col++) {
             let pole = document.createElement('div');
             pole.className = 'vertical-pole';
-            let leftPos = (col * (poleGap + poleWidth)) + (poleGap / 2);
-            pole.style.left = leftPos + 'px';
+            let leftPos = (col * (spaceBetweenPoles + 4)) + centerOffset;
+            pole.style.left = leftPos + '%';
             ladderContainer.appendChild(pole);
         }
 
+        // رسم پله‌های افقی
         for(let step=0; step<NUMBER_OF_STEPS; step++) {
             let stepPercent = 10 + (step * (80 / (NUMBER_OF_STEPS - 1)));
-            
             for(let col=0; col<numCols-1; col++) {
                 let rungSpace = document.createElement('div');
                 rungSpace.className = 'rung-space';
                 rungSpace.style.top = stepPercent + '%';
                 
-                let leftOffset = (col * (poleGap + poleWidth)) + poleWidth + (poleGap / 2);
-                rungSpace.style.left = leftOffset + 'px';
-                rungSpace.style.width = poleGap + 'px';
+                let leftOffset = (col * (spaceBetweenPoles + 4)) + spaceBetweenPoles + centerOffset;
+                rungSpace.style.left = leftOffset + '%';
+                rungSpace.style.width = spaceBetweenPoles + '%';
 
                 let rungLine = document.createElement('div');
                 rungLine.className = 'rung-line';
-                
                 if(currentGameState.rungsState[col][step]) {
                     rungLine.classList.add('active');
                 }
-                
                 rungLine.onclick = function(e) {
                     e.stopPropagation();
                     this.classList.toggle('active');
                     currentGameState.rungsState[col][step] = this.classList.contains('active');
                 };
-                
                 rungSpace.appendChild(rungLine);
                 ladderContainer.appendChild(rungSpace);
             }
@@ -481,14 +461,11 @@
     function simulateMovement() {
         let finalPositions = [];
         let numCols = currentGameState.letters.length;
-
         for(let startCol=0; startCol<numCols; startCol++) {
             let currentCol = startCol;
-            
             for(let step=0; step<NUMBER_OF_STEPS; step++) {
                 let canGoLeft = currentCol > 0 && currentGameState.rungsState[currentCol-1][step];
                 let canGoRight = currentCol < numCols-1 && currentGameState.rungsState[currentCol][step];
-
                 if(canGoLeft && canGoRight) {
                     continue; 
                 } 
@@ -512,7 +489,6 @@
 
     function checkAnswer() {
         let finalCols = simulateMovement();
-        
         let isCorrect = true;
         for(let i=0; i<currentGameState.letters.length; i++) {
             if(currentGameState.letters[i] !== currentGameState.targetLetters[finalCols[i]]) {
@@ -520,7 +496,6 @@
                 break;
             }
         }
-
         showResult(isCorrect);
     }
 
@@ -529,19 +504,15 @@
         const title = document.getElementById('result-title');
         const stars = document.getElementById('stars-earned');
         const buttons = document.getElementById('result-buttons');
-
         if(isCorrect) {
             overlay.className = 'success';
             overlay.style.display = 'flex';
             title.innerText = 'آفرین!';
-            
             let earned = currentGameState.level === 'easy' ? 1 : 2;
             let starStr = '⭐'.repeat(earned);
             stars.innerText = starStr;
-            
             currentGameState.currentStars += earned;
             document.getElementById('total-stars').innerText = currentGameState.currentStars;
-
             buttons.innerHTML = `
                 <button class="result-btn" onclick="continueGame('easy')">ادامه با سطح آسان</button>
                 <button class="result-btn" onclick="continueGame('hard')">ادامه با سطح سخت</button>
@@ -551,7 +522,6 @@
             overlay.style.display = 'flex';
             title.innerText = 'نادرست!';
             stars.innerText = '';
-            
             buttons.innerHTML = `
                 <button class="result-btn" onclick="retryLevel()">امتحان مجدد</button>
                 <button class="result-btn" onclick="nextLevelNoScore()">بعدی</button>
